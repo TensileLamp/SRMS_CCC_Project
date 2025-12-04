@@ -6,7 +6,7 @@
 #define STUD_FILE "students.txt"
 #define CRED_FILE "credentials.txt"
 
-/* ---------------- INPUT HELPERS ---------------- */
+//Simplifier Functions
 
 void getString(char *msg, char *s, int size) {
     printf("%s", msg);
@@ -38,7 +38,7 @@ float getFloat(char *msg, float min, float max) {
     }
 }
 
-/* ---------------- LOGIN SYSTEM ---------------- */
+//Login System
 
 int checkLogin(char *username, char *password, char *role, int *studentId) {
     FILE *fp = fopen(CRED_FILE, "r");
@@ -63,7 +63,7 @@ int checkLogin(char *username, char *password, char *role, int *studentId) {
     return 0;
 }
 
-/* ---------------- STUDENT FUNCTIONS ---------------- */
+//Student Functions
 
 int idExists(int id) {
     FILE *fp = fopen(STUD_FILE, "r");
@@ -85,7 +85,7 @@ int idExists(int id) {
 void addStudent() {
     FILE *fp;
 
-    printf("\n--- ADD STUDENT ---\n");
+    printf("\n======[ ADD STUDENT ]======\n");
 
     int id;
     while (1) {
@@ -108,12 +108,12 @@ void addStudent() {
 
     float cgpa = getFloat("Enter CGPA (0-10): ", 0, 10);
 
-    /* -------- SAVE STUDENT -------- */
+    //save student
     fp = fopen(STUD_FILE, "a");
     fprintf(fp, "%d %s %d %c %.2f\n", id, name, year, toupper(sec[0]), cgpa);
     fclose(fp);
 
-    /* -------- GENERATE AUTO CREDENTIALS -------- */
+    //auto-gen credentials
     char uname[50], pass[50];
     sprintf(uname, "stu%d", id);
     sprintf(pass, "pass%d!", id);
@@ -122,7 +122,7 @@ void addStudent() {
     fprintf(fp, "%s %s S %d\n", uname, pass, id);
     fclose(fp);
 
-    /* -------- SHOW THEM TO ADMIN -------- */
+    //admin display
     printf("\nStudent Added!\n");
     printf("Generated Login:\n");
     printf("Username: %s\n", uname);
@@ -141,7 +141,7 @@ void displayStudents() {
     char sec;
     float cgpa;
 
-    printf("\n--- ALL STUDENTS ---\n");
+    printf("\n======[ ALL STUDENTS ]======\n");
 
     while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
         printf("\nID: %d\nName: %s\nYear: %d\nSection: %c\nCGPA: %.2f\n",
@@ -243,7 +243,7 @@ void deleteStudent() {
     while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
         if (id == sid) {
             deleted = 1;
-            continue; // skip writing
+            continue;
         }
         fprintf(temp, "%d %s %d %c %.2f\n", id, name, year, sec, cgpa);
     }
@@ -258,11 +258,11 @@ void deleteStudent() {
     else printf("Not found.\n");
 }
 
-/* ---------------- ROLE MENUS ---------------- */
+//Sub-Login Menu's
 
 void adminMenu() {
     while (1) {
-        printf("\n--- ADMIN MENU ---\n");
+        printf("\n======[ ADMIN MENU ]======\n");
         printf("1. Add Student\n2. Display\n3. Search\n4. Update\n5. Delete\n6. Logout\n");
 
         int c = getInt("Enter choice: ");
@@ -277,7 +277,7 @@ void adminMenu() {
 
 void teacherMenu() {
     while (1) {
-        printf("\n--- TEACHER MENU ---\n");
+        printf("\n======[ TEACHER MENU ]======\n");
         printf("1. Display Students\n2. Search\n3. Logout\n");
 
         int c = getInt("Choice: ");
@@ -312,18 +312,17 @@ void studentMenu(int sid) {
     fclose(fp);
 }
 
-/* ---------------- MAIN LOGIN LOOP ---------------- */
 
 int main() {
     char username[50], password[50];
 
     while (1) {
-        printf("\n=== MAIN MENU ===\n1. Login\n2. Exit\n");
+        printf("\n======[ MAIN MENU ]======\n1. Login\n2. Exit\n");
         int ch = getInt("Choice: ");
 
         if (ch == 2) break;
 
-        printf("=================\n");
+        printf("===========================\n");
         getString("Username: ", username, 50);
         getString("Password: ", password, 50);
 
@@ -340,3 +339,4 @@ int main() {
 
     return 0;
 }
+
