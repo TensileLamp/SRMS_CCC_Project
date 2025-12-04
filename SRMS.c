@@ -144,7 +144,7 @@ void displayStudents() {
     printf("\n======[ ALL STUDENTS ]======\n");
 
     while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        printf("\nID: %d\nName: %s\nYear: %d\nSection: %c\nCGPA: %.2f\n",
+        printf("\n|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
                id, name, year, sec, cgpa);
     }
 
@@ -223,6 +223,45 @@ void updateStudent() {
     else printf("Student not found.\n");
 }
 
+
+//specifically for Teacher logins
+void editCGPA() {
+    int sid = getInt("Enter ID to edit CGPA: ");
+
+    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *temp = fopen("temp.txt", "w");
+
+    if (!fp) {
+        printf("No records.\n");
+        return;
+    }
+
+    int id, year;
+    char name[50];
+    char sec;
+    float cgpa;
+    int found = 0;
+
+    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
+        if (id == sid) {
+            found = 1;
+            printf("Current CGPA: %.2f\n", cgpa);
+            cgpa = getFloat("Enter new CGPA (0-10): ", 0, 10);
+        }
+        fprintf(temp, "%d %s %d %c %.2f\n", id, name, year, sec, cgpa);
+    }
+
+    fclose(fp);
+    fclose(temp);
+
+    remove(STUD_FILE);
+    rename("temp.txt", STUD_FILE);
+
+    if (found) printf("CGPA updated successfully.\n");
+    else printf("Student not found.\n");
+}
+
+
 void deleteStudent() {
     int sid = getInt("Enter ID to delete: ");
 
@@ -278,14 +317,18 @@ void adminMenu() {
 void teacherMenu() {
     while (1) {
         printf("\n======[ TEACHER MENU ]======\n");
-        printf("1. Display Students\n2. Search\n3. Logout\n");
+        printf("1. Display Students\n2. Search\n3. Edit CGPA\n4. Logout\n");
 
         int c = getInt("Choice: ");
+
         if (c == 1) displayStudents();
         else if (c == 2) searchStudent();
-        else return;
+        else if (c == 3) editCGPA();
+        else if (c == 4) return;
+        else printf("Invalid choice!\n");
     }
 }
+
 
 void studentMenu(int sid) {
     printf("\n--- YOUR DETAILS ---\n");
@@ -303,7 +346,7 @@ void studentMenu(int sid) {
 
     while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
         if (id == sid) {
-            printf("ID: %d\nName: %s\nYear: %d\nSection: %c\nCGPA: %.2f\n",
+            printf("|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
                    id, name, year, sec, cgpa);
             break;
         }
@@ -318,7 +361,7 @@ int main() {
 
     while (1) {
         printf("\n======[ MAIN MENU ]======\n1. Login\n2. Exit\n");
-        int ch = getInt("Choice: ");
+        int ch = getInt("Enter choice: ");
 
         if (ch == 2) break;
 
@@ -339,5 +382,4 @@ int main() {
 
     return 0;
 }
-
 
