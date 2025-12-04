@@ -322,7 +322,7 @@ int main() {
 
         if (ch == 2) break;
 
-        printf("===========================\n");
+        printf("=========================\n");
         getString("Username: ", username, 50);
         getString("Password: ", password, 50);
 
@@ -339,4 +339,5 @@ int main() {
 
     return 0;
 }
+
 
