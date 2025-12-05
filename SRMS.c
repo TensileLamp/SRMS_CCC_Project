@@ -6,11 +6,21 @@
 #define STDFILE "students.txt"
 #define CRDFILE "credentials.txt"
 
-//Simplifier Functions
 
+typedef struct {
+    int id;
+    char name[50];
+    int year;
+    char section;
+    float cgpa;
+} Student;
+
+
+//Helper FUnctions
 void getString(char *msg, char *s, int size) {
     printf("%s", msg);
     fgets(s, size, stdin);
+    if (s[0] == '\n') fgets(s, size, stdin);
     s[strcspn(s, "\n")] = '\0';
 }
 
@@ -20,8 +30,7 @@ int getInt(char *msg) {
     while (1) {
         printf("%s", msg);
         fgets(temp, 50, stdin);
-        if (sscanf(temp, "%d", &x) == 1)
-            return x;
+        if (sscanf(temp, "%d", &x) == 1) return x;
         printf("Invalid number!\n");
     }
 }
@@ -38,8 +47,8 @@ float getFloat(char *msg, float min, float max) {
     }
 }
 
-//Login System
 
+//Credential Login
 int checkLogin(char *username, char *password, char *role, int *studentId) {
     FILE *fp = fopen(CRDFILE, "r");
     if (!fp) {
@@ -63,71 +72,73 @@ int checkLogin(char *username, char *password, char *role, int *studentId) {
     return 0;
 }
 
-//Student Functions
 
+//Student Related Functions
 int idExists(int id) {
     FILE *fp = fopen(STDFILE, "r");
     if (!fp) return 0;
 
-    int sid;
-    char name[50];
-    int year;
-    char sec;
-    float cgpa;
+    Student st;
 
-    while (fscanf(fp, "%d %s %d %c %f", &sid, name, &year, &sec, &cgpa) == 5) {
-        if (sid == id) { fclose(fp); return 1; }
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+        if (st.id == id) { fclose(fp); return 1; }
     }
+
     fclose(fp);
     return 0;
 }
 
+
 void addStudent() {
+    Student st;
     FILE *fp;
 
     printf("\n======[ ADD STUDENT ]======\n");
 
-    int id;
     while (1) {
-        id = getInt("Enter ID: ");
-        if (!idExists(id)) break;
+        st.id = getInt("Enter ID: ");
+        if (!idExists(st.id)) break;
         printf("ID already exists! Try again.\n");
     }
 
-    char name[50];
-    getString("Enter Name: ", name, 50);
+    getString("Enter Name (no spaces): ", st.name, 50);
+    if (strchr(st.name, ' ')) {
+        printf("Name cannot contain spaces!\n");
+        return;
+    }
 
-    int year = getInt("Enter Year: ");
+    st.year = getInt("Enter Year: ");
 
     char sec[10];
     while (1) {
         getString("Enter Section (A-Z): ", sec, 10);
-        if (strlen(sec) == 1 && isalpha(sec[0])) break;
+        if (strlen(sec) == 1 && isalpha(sec[0])) {
+            st.section = toupper(sec[0]);
+            break;
+        }
         printf("Invalid section!\n");
     }
 
-    float cgpa = getFloat("Enter CGPA (0-10): ", 0, 10);
+    st.cgpa = getFloat("Enter CGPA (0-10): ", 0, 10);
 
-    //save student
     fp = fopen(STDFILE, "a");
-    fprintf(fp, "%d %s %d %c %.2f\n", id, name, year, toupper(sec[0]), cgpa);
+    fprintf(fp, "%d %s %d %c %.2f\n",
+            st.id, st.name, st.year, st.section, st.cgpa);
     fclose(fp);
 
-    //auto-gen credentials
     char uname[50], pass[50];
-    sprintf(uname, "stu%d", id);
-    sprintf(pass, "pass%d!", id);
+    sprintf(uname, "stu%d", st.id);
+    sprintf(pass, "pass%d!", st.id);
 
     fp = fopen(CRDFILE, "a");
-    fprintf(fp, "%s %s S %d\n", uname, pass, id);
+    fprintf(fp, "%s %s S %d\n", uname, pass, st.id);
     fclose(fp);
 
-    //admin display
     printf("\nStudent Added!\n");
-    printf("Generated Login:\n");
-    printf("Username: %s\n", uname);
-    printf("Password: %s\n", pass);
+    printf("Generated Login:\nUsername: %s\nPassword: %s\n", uname, pass);
 }
+
 
 void displayStudents() {
     FILE *fp = fopen(STDFILE, "r");
@@ -136,20 +147,20 @@ void displayStudents() {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
 
     printf("\n======[ ALL STUDENTS ]======\n");
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
         printf("\n|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
-               id, name, year, sec, cgpa);
+               st.id, st.name, st.year, st.section, st.cgpa);
     }
 
     fclose(fp);
 }
+
 
 void searchStudent() {
     int sid = getInt("Enter ID to search: ");
@@ -160,15 +171,14 @@ void searchStudent() {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        if (id == sid) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
+        if (st.id == sid) {
             printf("\nFOUND!\n|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
-                   id, name, year, sec, cgpa);
+                   st.id, st.name, st.year, st.section, st.cgpa);
             fclose(fp);
             return;
         }
@@ -177,6 +187,7 @@ void searchStudent() {
     printf("Not found.\n");
     fclose(fp);
 }
+
 
 void updateStudent() {
     int sid = getInt("Enter ID to update: ");
@@ -189,28 +200,35 @@ void updateStudent() {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
     int found = 0;
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        if (id == sid) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
+        if (st.id == sid) {
             found = 1;
+
             printf("\n1. Update Year\n2. Update Section\n3. Update CGPA\n");
             int ch = getInt("Choose: ");
 
-            if (ch == 1) year = getInt("New Year: ");
+            if (ch == 1) st.year = getInt("New Year: ");
             else if (ch == 2) {
-                char t[10]; 
-                getString("New Section: ", t, 10);
-                sec = toupper(t[0]);
+                char t[10];
+                while (1) {
+                    getString("New Section (A-Z): ", t, 10);
+                    if (strlen(t) == 1 && isalpha(t[0])) {
+                        st.section = toupper(t[0]);
+                        break;
+                    }
+                    printf("Invalid section!\n");
+                }
             }
-            else if (ch == 3) cgpa = getFloat("New CGPA: ", 0, 10);
+            else if (ch == 3) st.cgpa = getFloat("New CGPA: ", 0, 10);
         }
 
-        fprintf(temp, "%d %s %d %c %.2f\n", id, name, year, sec, cgpa);
+        fprintf(temp, "%d %s %d %c %.2f\n",
+                st.id, st.name, st.year, st.section, st.cgpa);
     }
 
     fclose(fp);
@@ -224,7 +242,6 @@ void updateStudent() {
 }
 
 
-//specifically for Teacher logins
 void editCGPA() {
     int sid = getInt("Enter ID to edit CGPA: ");
 
@@ -236,19 +253,20 @@ void editCGPA() {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
     int found = 0;
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        if (id == sid) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
+        if (st.id == sid) {
             found = 1;
-            printf("Current CGPA: %.2f\n", cgpa);
-            cgpa = getFloat("Enter new CGPA (0-10): ", 0, 10);
+            printf("Current CGPA: %.2f\n", st.cgpa);
+            st.cgpa = getFloat("Enter new CGPA (0-10): ", 0, 10);
         }
-        fprintf(temp, "%d %s %d %c %.2f\n", id, name, year, sec, cgpa);
+
+        fprintf(temp, "%d %s %d %c %.2f\n",
+                st.id, st.name, st.year, st.section, st.cgpa);
     }
 
     fclose(fp);
@@ -273,18 +291,19 @@ void deleteStudent() {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
     int deleted = 0;
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        if (id == sid) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
+        if (st.id == sid) {
             deleted = 1;
             continue;
         }
-        fprintf(temp, "%d %s %d %c %.2f\n", id, name, year, sec, cgpa);
+
+        fprintf(temp, "%d %s %d %c %.2f\n",
+                st.id, st.name, st.year, st.section, st.cgpa);
     }
 
     fclose(fp);
@@ -293,16 +312,62 @@ void deleteStudent() {
     remove(STDFILE);
     rename("temp.txt", STDFILE);
 
+
+    FILE *cf = fopen(CRDFILE, "r");
+    FILE *ct = fopen("credtemp.txt", "w");
+    char u[50], p[50], r;
+    int cid;
+
+    if (cf) {
+        while (fscanf(cf, "%s %s %c %d", u, p, &r, &cid) == 4) {
+            if (cid == sid) continue;
+            fprintf(ct, "%s %s %c %d\n", u, p, r, cid);
+        }
+
+        fclose(cf);
+        fclose(ct);
+        remove(CRDFILE);
+        rename("credtemp.txt", CRDFILE);
+    }
+
     if (deleted) printf("Deleted successfully.\n");
     else printf("Not found.\n");
 }
 
-//Sub-Login Menu's
 
+
+//AUTO GENERATED TEACHER LOGIN
+void addTeacher() {
+    int count = 0;
+    FILE *cf = fopen(CRDFILE, "r");
+    if (cf) {
+        char u[50], p[50], r;
+        int cid;
+        while (fscanf(cf, "%s %s %c %d", u, p, &r, &cid) == 4) {
+            if (r == 'T') count++;
+        }
+        fclose(cf);
+    }
+
+    char user[50], pass[50];
+    sprintf(user, "teach%d", count + 1);
+    sprintf(pass, "tpass%d!", count + 1);
+
+    FILE *fp = fopen(CRDFILE, "a");
+    fprintf(fp, "%s %s T -1\n", user, pass);
+    fclose(fp);
+
+    printf("Teacher added successfully.\n");
+    printf("Username: %s\nPassword: %s\n", user, pass);
+}
+
+
+
+//Menu Functions
 void adminMenu() {
     while (1) {
         printf("\n======[ ADMIN MENU ]======\n");
-        printf("1. Add Student\n2. Display\n3. Search\n4. Update\n5. Delete\n6. Logout\n");
+        printf("1. Add Student\n2. Display\n3. Search\n4. Update\n5. Delete\n6. Add Teacher\n7. Logout\n");
 
         int c = getInt("Enter choice: ");
         if (c == 1) addStudent();
@@ -310,9 +375,11 @@ void adminMenu() {
         else if (c == 3) searchStudent();
         else if (c == 4) updateStudent();
         else if (c == 5) deleteStudent();
-        else if (c == 6) return;
+        else if (c == 6) addTeacher();
+        else if (c == 7) return;
     }
 }
+
 
 void teacherMenu() {
     while (1) {
@@ -320,12 +387,10 @@ void teacherMenu() {
         printf("1. Display Students\n2. Search\n3. Edit CGPA\n4. Logout\n");
 
         int c = getInt("Choice: ");
-
         if (c == 1) displayStudents();
         else if (c == 2) searchStudent();
         else if (c == 3) editCGPA();
         else if (c == 4) return;
-        else printf("Invalid choice!\n");
     }
 }
 
@@ -339,15 +404,14 @@ void studentMenu(int sid) {
         return;
     }
 
-    int id, year;
-    char name[50];
-    char sec;
-    float cgpa;
+    Student st;
 
-    while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
-        if (id == sid) {
+    while (fscanf(fp, "%d %s %d %c %f",
+                  &st.id, st.name, &st.year, &st.section, &st.cgpa) == 5) {
+
+        if (st.id == sid) {
             printf("|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
-                   id, name, year, sec, cgpa);
+                   st.id, st.name, st.year, st.section, st.cgpa);
             break;
         }
     }
@@ -356,6 +420,7 @@ void studentMenu(int sid) {
 }
 
 
+//MAIN
 int main() {
     char username[50], password[50];
 
@@ -382,4 +447,3 @@ int main() {
 
     return 0;
 }
-
