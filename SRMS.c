@@ -3,8 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#define STUD_FILE "students.txt"
-#define CRED_FILE "credentials.txt"
+#define STDFILE "students.txt"
+#define CRDFILE "credentials.txt"
 
 //Simplifier Functions
 
@@ -41,7 +41,7 @@ float getFloat(char *msg, float min, float max) {
 //Login System
 
 int checkLogin(char *username, char *password, char *role, int *studentId) {
-    FILE *fp = fopen(CRED_FILE, "r");
+    FILE *fp = fopen(CRDFILE, "r");
     if (!fp) {
         printf("credentials.txt not found!\n");
         return 0;
@@ -66,7 +66,7 @@ int checkLogin(char *username, char *password, char *role, int *studentId) {
 //Student Functions
 
 int idExists(int id) {
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     if (!fp) return 0;
 
     int sid;
@@ -109,7 +109,7 @@ void addStudent() {
     float cgpa = getFloat("Enter CGPA (0-10): ", 0, 10);
 
     //save student
-    fp = fopen(STUD_FILE, "a");
+    fp = fopen(STDFILE, "a");
     fprintf(fp, "%d %s %d %c %.2f\n", id, name, year, toupper(sec[0]), cgpa);
     fclose(fp);
 
@@ -118,7 +118,7 @@ void addStudent() {
     sprintf(uname, "stu%d", id);
     sprintf(pass, "pass%d!", id);
 
-    fp = fopen(CRED_FILE, "a");
+    fp = fopen(CRDFILE, "a");
     fprintf(fp, "%s %s S %d\n", uname, pass, id);
     fclose(fp);
 
@@ -130,7 +130,7 @@ void addStudent() {
 }
 
 void displayStudents() {
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     if (!fp) {
         printf("No data found.\n");
         return;
@@ -154,7 +154,7 @@ void displayStudents() {
 void searchStudent() {
     int sid = getInt("Enter ID to search: ");
 
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     if (!fp) {
         printf("No records.\n");
         return;
@@ -167,7 +167,7 @@ void searchStudent() {
 
     while (fscanf(fp, "%d %s %d %c %f", &id, name, &year, &sec, &cgpa) == 5) {
         if (id == sid) {
-            printf("\nFOUND!\nID: %d\nName: %s\nYear: %d\nSection: %c\nCGPA: %.2f\n",
+            printf("\nFOUND!\n|| ID: %d\n|| Name: %s\n|| Year: %d\n|| Section: %c\n|| CGPA: %.2f\n",
                    id, name, year, sec, cgpa);
             fclose(fp);
             return;
@@ -181,7 +181,7 @@ void searchStudent() {
 void updateStudent() {
     int sid = getInt("Enter ID to update: ");
 
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     FILE *temp = fopen("temp.txt", "w");
 
     if (!fp) {
@@ -216,8 +216,8 @@ void updateStudent() {
     fclose(fp);
     fclose(temp);
 
-    remove(STUD_FILE);
-    rename("temp.txt", STUD_FILE);
+    remove(STDFILE);
+    rename("temp.txt", STDFILE);
 
     if (found) printf("Updated successfully.\n");
     else printf("Student not found.\n");
@@ -228,7 +228,7 @@ void updateStudent() {
 void editCGPA() {
     int sid = getInt("Enter ID to edit CGPA: ");
 
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     FILE *temp = fopen("temp.txt", "w");
 
     if (!fp) {
@@ -254,8 +254,8 @@ void editCGPA() {
     fclose(fp);
     fclose(temp);
 
-    remove(STUD_FILE);
-    rename("temp.txt", STUD_FILE);
+    remove(STDFILE);
+    rename("temp.txt", STDFILE);
 
     if (found) printf("CGPA updated successfully.\n");
     else printf("Student not found.\n");
@@ -265,7 +265,7 @@ void editCGPA() {
 void deleteStudent() {
     int sid = getInt("Enter ID to delete: ");
 
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     FILE *temp = fopen("temp.txt", "w");
 
     if (!fp) {
@@ -290,8 +290,8 @@ void deleteStudent() {
     fclose(fp);
     fclose(temp);
 
-    remove(STUD_FILE);
-    rename("temp.txt", STUD_FILE);
+    remove(STDFILE);
+    rename("temp.txt", STDFILE);
 
     if (deleted) printf("Deleted successfully.\n");
     else printf("Not found.\n");
@@ -333,7 +333,7 @@ void teacherMenu() {
 void studentMenu(int sid) {
     printf("\n--- YOUR DETAILS ---\n");
 
-    FILE *fp = fopen(STUD_FILE, "r");
+    FILE *fp = fopen(STDFILE, "r");
     if (!fp) {
         printf("No record found.\n");
         return;
